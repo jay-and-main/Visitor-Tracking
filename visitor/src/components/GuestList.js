@@ -1,22 +1,66 @@
-// components/GuestList.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const GuestList = ({ guests, onCheckout, onRefresh }) => {
-  const handleCheckout = async (idNumber) => {
-    if (window.confirm('Are you sure you want to check out this guest?')) {
-      const result = await onCheckout(idNumber);
-      if (result.success) {
-        alert(result.message);
-      } else {
-        alert(result.message);
+const GuestList = ({ onCheckout, onRefresh }) => {
+  const [visitors, setVisitors] = useState([]);
+  const [n, setN] = useState(0);
+
+  const fetchVisitors = async (days) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/visitors/recent/${days}`);
+      if (!response.ok) {
+        console.error('Failed to fetch visitors:', response.statusText);
+        return [];
       }
+      const text = await response.text();
+      console.log('Raw response:', text);
+      const data = JSON.parse(text);
+      if (data.success && Array.isArray(data.data)) {
+        return data.data;
+      } else {
+        console.error('Unexpected response format:', data);
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching visitors:', error);
+      return [];
     }
   };
 
+  const loadInitialVisitors = async () => {
+    const initialVisitors = await fetchVisitors(0);
+    setVisitors(initialVisitors);
+  };
+
+  const loadPreviousDayVisitors = async () => {
+    const previousDayVisitors = await fetchVisitors(n + 1);
+    setVisitors((prevVisitors) => [...prevVisitors, ...previousDayVisitors]);
+    setN((prevN) => prevN + 1);
+  };
+
+  useEffect(() => {
+    loadInitialVisitors();
+  }, []);
+
+  const handleCheckout = async (idNumber) => {
+    if (window.confirm('Are you sure you want to check out this guest?')) {
+      const result = await onCheckout(idNumber);
+      alert(result.message);
+    }
+  };
+
+  // Separate visitors into visiting and checked out
+  const visitingGuests = visitors.filter(guest => !guest.outTime);
+  const checkedOutGuests = visitors.filter(guest => guest.outTime);
+
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+    <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '20px'
+      }}>
         <h2>Guest List</h2>
         <div>
           <Link
@@ -48,67 +92,106 @@ const GuestList = ({ guests, onCheckout, onRefresh }) => {
         </div>
       </div>
 
-      {guests.length === 0 ? (
-        <p>No guests found.</p>
-      ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f8f9fa' }}>
-                <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>Date</th>
-                <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>Name</th>
-                <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>Company</th>
-                <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>ID Number</th>
-                <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>In Time</th>
-                <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>Purpose</th>
-                <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>Out Time</th>
-                <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>Status</th>
-                <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {guests.map((guest, index) => (
-                <tr key={index}>
-                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{guest.date}</td>
-                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{guest.name}</td>
-                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{guest.company}</td>
-                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{guest.idNumber}</td>
-                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{guest.inTime}</td>
-                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{guest.purpose}</td>
-                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{guest.outTime || 'Not checked out'}</td>
-                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>
-                    <span style={{
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      backgroundColor: guest.status === 'Checked In' ? '#d4edda' : '#f8d7da',
-                      color: guest.status === 'Checked In' ? '#155724' : '#721c24'
-                    }}>
-                      {guest.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>
-                    {guest.status === 'Checked In' && (
-                      <button
-                        onClick={() => handleCheckout(guest.idNumber)}
-                        style={{
-                          backgroundColor: '#dc3545',
-                          color: 'white',
-                          padding: '6px 12px',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Check Out
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div style={{ marginBottom: '40px' }}>
+        <h3 style={{ marginBottom: '20px', color: '#28a745' }}>Visiting</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          {visitingGuests.map((guest, index) => (
+            <div
+              key={`${guest.idNumber}-${index}`}
+              style={{
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                padding: '15px',
+                backgroundColor: '#e8f5e9',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Name:</strong> {guest.name}
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Company:</strong> {guest.company}
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>ID Number:</strong> {guest.idNumber}
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Date:</strong> {guest.date}
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>In Time:</strong> {guest.inTime}
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => handleCheckout(guest.idNumber)}
+                  style={{
+                    backgroundColor: '#dc3545',
+                    color: 'white',
+                    padding: '8px 15px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Check Out
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
+
+      <div>
+        <h3 style={{ marginBottom: '20px', color: '#dc3545' }}>Checked Out</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          {checkedOutGuests.map((guest, index) => (
+            <div
+              key={`${guest.idNumber}-${index}`}
+              style={{
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                padding: '15px',
+                backgroundColor: 'white',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Name:</strong> {guest.name}
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Company:</strong> {guest.company}
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>ID Number:</strong> {guest.idNumber}
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Date:</strong> {guest.date}
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>In Time:</strong> {guest.inTime}
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Out Time:</strong> {guest.outTime}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button
+        onClick={loadPreviousDayVisitors}
+        style={{
+          backgroundColor: '#007bff',
+          color: 'white',
+          padding: '10px 20px',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          marginTop: '20px'
+        }}
+      >
+        Load Previous Day
+      </button>
     </div>
   );
 };

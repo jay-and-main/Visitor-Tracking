@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PhoneInput from 'react-phone-input-2';
+import { formatIndianPhone } from '../utils/formatIndianPhone';
 
 const GuestForm = ({ onAddGuest }) => {
   const navigate = useNavigate();
@@ -97,6 +99,7 @@ const GuestForm = ({ onAddGuest }) => {
             value={formData.date}
             onChange={handleChange}
             required
+            readOnly
             placeholder="YYYY-MM-DD"
             style={{ width: '100%', padding: '8px', marginTop: '5px' }}
           />
@@ -181,21 +184,24 @@ const GuestForm = ({ onAddGuest }) => {
           />
         </div>
         <div style={{ marginBottom: '15px' }}>
-          <label>Contact:</label>
-          <input
-            type="text"
-            name="contact"
+          <label>Phone Number:</label>
+          <PhoneInput
+            country={'in'}
             value={formData.contact}
-            onChange={handleChange}
-            required
-            placeholder="e.g. 9876543210"
-            maxLength={10}
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-            inputMode="numeric"
-            pattern="\\d{10}"
-            title="Contact must be a 10-digit number."
+            onChange={(phone) => {
+              setFormData((prev) => ({ ...prev, contact: phone }));
+            }}
+            inputStyle={{
+              width: '100%',
+              padding: '8px',
+              paddingLeft: '65px', // 👈 keep this to avoid overlap
+              marginTop: '5px'
+            }}
+            enableSearch
+            countryCodeEditable={false}
           />
         </div>
+
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
             type="submit"

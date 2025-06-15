@@ -232,6 +232,53 @@ app.get('/api/visitors', async (req, res) => {
   }
 });
 
+// Get visitors from the current day minus 'n' days
+app.get('/api/visitors/recent/:days', async (req, res) => {
+  try {
+    const { days } = req.params;
+    const nDays = parseInt(days, 10);
+
+    if (isNaN(nDays) || nDays < 0) {
+      return res.status(400).json({ error: 'Invalid number of days' });
+    }
+
+    const sheet = await initializeSheet();
+    const rows = await sheet.getRows();
+
+    const today = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - nDays - 1); // Shift day by 1
+
+    const visitors = rows.filter(row => {
+      const rowDate = new Date(row.get('Date'));
+      return rowDate >= startDate && rowDate <= today;
+    }).map(row => ({
+      date: row.get('Date'),
+      name: row.get('Name'),
+      company: row.get('Company'),
+      idNumber: row.get('ID Number'),
+      inTime: row.get('In Time'),
+      purpose: row.get('Purpose'),
+      outTime: row.get('Out Time'),
+      approvalPerson: row.get('Approval Person'),
+      contact: row.get('Contact'),
+      status: row.get('Status')
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: visitors
+    });
+
+  } catch (error) {
+    console.error('Error fetching recent visitors:', error);
+    res.status(500).json({
+      error: 'Failed to fetch recent visitors',
+      details: error.message
+    });
+  }
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

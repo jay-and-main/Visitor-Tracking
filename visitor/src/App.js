@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import GuestList from './components/GuestList';
 import GuestForm from './components/GuestForm';
 import GuestShow from './components/GuestShow';
+import 'react-phone-input-2/lib/style.css';
+
 
 // API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
