@@ -27,9 +27,9 @@ async function initializeSheet() {
   try {
     const doc = new GoogleSpreadsheet(SPREADSHEET_ID, serviceAccountAuth);
     await doc.loadInfo();
-   
+
     let sheet = doc.sheetsByIndex[0];
-   
+
     // Check if headers exist, if not create them
     await sheet.loadHeaderRow();
     if (!sheet.headerValues || sheet.headerValues.length === 0) {
@@ -46,7 +46,7 @@ async function initializeSheet() {
         'Status'
       ]);
     }
-   
+
     return sheet;
   } catch (error) {
     console.error('Error initializing sheet:', error);
@@ -80,7 +80,7 @@ app.post('/api/visitors', async (req, res) => {
     }
 
     const sheet = await initializeSheet();
-   
+
     // Add row to Google Sheets
     const newRow = await sheet.addRow({
       'Date': date,
@@ -125,10 +125,10 @@ app.patch('/api/visitors/:idNumber/checkout', async (req, res) => {
 
     const sheet = await initializeSheet();
     await sheet.loadCells();
-   
+
     const rows = await sheet.getRows();
     const visitorRow = rows.find(row => row.get('ID Number') === idNumber && !row.get('Out Time'));
-   
+
     if (!visitorRow) {
       return res.status(404).json({ error: 'Active visitor not found with this ID' });
     }
@@ -156,12 +156,55 @@ app.patch('/api/visitors/:idNumber/checkout', async (req, res) => {
   }
 });
 
+// Update any visitor entry fields
+app.patch('/api/visitors/:idNumber', async (req, res) => {
+  try {
+    const { idNumber } = req.params;
+    const updates = req.body;
+    if (!idNumber) {
+      return res.status(400).json({ error: 'ID Number is required' });
+    }
+    if (!updates || Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No update fields provided' });
+    }
+    const sheet = await initializeSheet();
+    await sheet.loadCells();
+    const rows = await sheet.getRows();
+    // Find the most recent entry for this ID Number
+    const visitorRow = rows.reverse().find(row => row.get('ID Number') === idNumber);
+    if (!visitorRow) {
+      return res.status(404).json({ error: 'Visitor not found with this ID' });
+    }
+    // Update fields
+    const allowedFields = ['Date', 'Name', 'Company', 'ID Number', 'In Time', 'Purpose', 'Out Time', 'Approval Person', 'Contact', 'Status'];
+    Object.entries(updates).forEach(([key, value]) => {
+      // Map camelCase to header case if needed
+      const headerKey = allowedFields.find(f => f.replace(/\s/g, '').toLowerCase() === key.replace(/\s/g, '').toLowerCase());
+      if (headerKey && value !== undefined) {
+        visitorRow.set(headerKey, value);
+      }
+    });
+    await visitorRow.save();
+    res.json({
+      success: true,
+      message: 'Visitor entry updated successfully',
+      data: updates
+    });
+  } catch (error) {
+    console.error('Error updating visitor:', error);
+    res.status(500).json({
+      error: 'Failed to update visitor entry',
+      details: error.message
+    });
+  }
+});
+
 // Get all visitors
 app.get('/api/visitors', async (req, res) => {
   try {
     const sheet = await initializeSheet();
     const rows = await sheet.getRows();
-   
+
     const visitors = rows.map(row => ({
       date: row.get('Date'),
       name: row.get('Name'),

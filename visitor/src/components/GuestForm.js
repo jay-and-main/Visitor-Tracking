@@ -44,14 +44,12 @@ const GuestForm = ({ onAddGuest }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setMessage('');
-
+    setIsSubmitting(true);
     try {
       const result = await onAddGuest(formData);
       if (result.success) {
         setMessage(result.message);
-        // Reset form
         setFormData({
           date: getISTDate(),
           name: '',
@@ -63,8 +61,6 @@ const GuestForm = ({ onAddGuest }) => {
           approvalPerson: '',
           contact: ''
         });
-
-        // Navigate back to list after successful submission
         setTimeout(() => {
           navigate('/');
         }, 2000);
@@ -81,7 +77,6 @@ const GuestForm = ({ onAddGuest }) => {
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h2>Add New Guest</h2>
-     
       {message && (
         <div style={{
           padding: '10px',
@@ -93,8 +88,7 @@ const GuestForm = ({ onAddGuest }) => {
           {message}
         </div>
       )}
-
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div style={{ marginBottom: '15px' }}>
           <label>Date:</label>
           <input
@@ -103,10 +97,10 @@ const GuestForm = ({ onAddGuest }) => {
             value={formData.date}
             onChange={handleChange}
             required
+            placeholder="YYYY-MM-DD"
             style={{ width: '100%', padding: '8px', marginTop: '5px' }}
           />
         </div>
-
         <div style={{ marginBottom: '15px' }}>
           <label>Name:</label>
           <input
@@ -115,10 +109,11 @@ const GuestForm = ({ onAddGuest }) => {
             value={formData.name}
             onChange={handleChange}
             required
+            placeholder="e.g. Priya Sharma"
             style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            minLength={2}
           />
         </div>
-
         <div style={{ marginBottom: '15px' }}>
           <label>Company:</label>
           <input
@@ -127,10 +122,11 @@ const GuestForm = ({ onAddGuest }) => {
             value={formData.company}
             onChange={handleChange}
             required
+            placeholder="e.g. Indiqube"
             style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            minLength={2}
           />
         </div>
-
         <div style={{ marginBottom: '15px' }}>
           <label>ID Number:</label>
           <input
@@ -139,10 +135,13 @@ const GuestForm = ({ onAddGuest }) => {
             value={formData.idNumber}
             onChange={handleChange}
             required
+            placeholder="e.g. EMP12345 or 123456789012"
+            maxLength={20}
             style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            pattern="[A-Za-z0-9]+"
+            title="ID Number must be alphanumeric."
           />
         </div>
-
         <div style={{ marginBottom: '15px' }}>
           <label>In Time:</label>
           <input
@@ -151,10 +150,10 @@ const GuestForm = ({ onAddGuest }) => {
             value={formData.inTime}
             onChange={handleChange}
             required
+            placeholder="HH:MM"
             style={{ width: '100%', padding: '8px', marginTop: '5px' }}
           />
         </div>
-
         <div style={{ marginBottom: '15px' }}>
           <label>Purpose:</label>
           <textarea
@@ -163,10 +162,11 @@ const GuestForm = ({ onAddGuest }) => {
             onChange={handleChange}
             required
             rows="3"
+            placeholder="e.g. Client meeting"
             style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            minLength={2}
           />
         </div>
-
         <div style={{ marginBottom: '15px' }}>
           <label>Approval Person:</label>
           <input
@@ -175,22 +175,27 @@ const GuestForm = ({ onAddGuest }) => {
             value={formData.approvalPerson}
             onChange={handleChange}
             required
+            placeholder="e.g. Amit Verma"
             style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            minLength={2}
           />
         </div>
-
         <div style={{ marginBottom: '15px' }}>
           <label>Contact:</label>
           <input
-            type="tel"
+            type="text"
             name="contact"
             value={formData.contact}
             onChange={handleChange}
             required
+            placeholder="e.g. 9876543210"
+            maxLength={10}
             style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            inputMode="numeric"
+            pattern="\\d{10}"
+            title="Contact must be a 10-digit number."
           />
         </div>
-
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
             type="submit"
@@ -207,7 +212,6 @@ const GuestForm = ({ onAddGuest }) => {
           >
             {isSubmitting ? 'Adding Guest...' : 'Add Guest'}
           </button>
-         
           <button
             type="button"
             onClick={() => navigate('/')}
