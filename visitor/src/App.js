@@ -21,11 +21,11 @@ const apiService = {
         },
         body: JSON.stringify(visitorData),
       });
-     
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-     
+
       return await response.json();
     } catch (error) {
       console.error('Error adding visitor:', error);
@@ -37,11 +37,11 @@ const apiService = {
   getVisitors: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/visitors`);
-     
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-     
+
       return await response.json();
     } catch (error) {
       console.error('Error fetching visitors:', error);
@@ -59,11 +59,11 @@ const apiService = {
         },
         body: JSON.stringify({ outTime }),
       });
-     
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-     
+
       return await response.json();
     } catch (error) {
       console.error('Error checking out visitor:', error);
@@ -148,7 +148,8 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
+      <div className="App" style={{ padding: 0, margin: 0 }}>
+        <img src="/header.png" alt="Header" style={{ width: '100%', objectFit: 'cover', display: 'block' }} />
         {error && (
           <div style={{ color: 'red', padding: '10px', background: '#fee' }}>
             {error}
@@ -187,6 +188,7 @@ function App() {
             }
           />
         </Routes>
+        <img src="/footer.png" alt="Footer" style={{ width: '100%', objectFit: 'cover', display: 'block' }} />
       </div>
     </Router>
   );

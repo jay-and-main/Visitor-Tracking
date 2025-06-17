@@ -1,188 +1,303 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const GuestList = ({ guests, onCheckout, onRefresh }) => {
-  const [n, setN] = useState(0);
+const CardHolder = ({ title, guests, onAction, actionLabel, actionColor }) => (
+  <div style={{ marginBottom: '40px' }}>
+    <h3 style={{ 
+      marginBottom: '25px', 
+      color: '#FF492C',
+      fontSize: '22px',
+      fontWeight: '600',
+      fontFamily: 'Figtree, sans-serif'
+    }}>
+      {title}
+    </h3>
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+      gap: '20px' 
+    }}>
+      {guests.length === 0 ? (
+        <div style={{
+          padding: '30px',
+          textAlign: 'center',
+          color: '#6c757d',
+          fontFamily: 'Figtree, sans-serif',
+          fontSize: '16px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '12px',
+          border: '2px dashed #dee2e6'
+        }}>
+          No guests to display
+        </div>
+      ) : (
+        guests.map((guest, index) => (
+          <div
+            key={`${guest.idNumber}-${index}`}
+            style={{
+              border: '2px solid #FF492C',
+              borderRadius: '12px',
+              padding: '20px',
+              backgroundColor: '#ffffff',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              fontFamily: 'Figtree, sans-serif',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-2px)';
+              e.target.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+            }}
+          >
+            <div style={{ 
+              marginBottom: '12px',
+              fontSize: '16px',
+              color: '#062846'
+            }}>
+              <span style={{ fontWeight: '600', color: '#FF492C' }}>Name:</span> {guest.name}
+            </div>
+            <div style={{ 
+              marginBottom: '12px',
+              fontSize: '16px',
+              color: '#062846'
+            }}>
+              <span style={{ fontWeight: '600', color: '#FF492C' }}>Company:</span> {guest.company}
+            </div>
+            <div style={{ 
+              marginBottom: '12px',
+              fontSize: '16px',
+              color: '#062846'
+            }}>
+              <span style={{ fontWeight: '600', color: '#FF492C' }}>ID Number:</span> {guest.idNumber}
+            </div>
+            <div style={{ 
+              marginBottom: '12px',
+              fontSize: '16px',
+              color: '#062846'
+            }}>
+              <span style={{ fontWeight: '600', color: '#FF492C' }}>Date:</span> {guest.date}
+            </div>
+            <div style={{ 
+              marginBottom: '12px',
+              fontSize: '16px',
+              color: '#062846'
+            }}>
+              <span style={{ fontWeight: '600', color: '#FF492C' }}>In Time:</span> {guest.inTime}
+            </div>
+            {guest.outTime && (
+              <div style={{ 
+                marginBottom: '12px',
+                fontSize: '16px',
+                color: '#062846'
+              }}>
+                <span style={{ fontWeight: '600', color: '#FF492C' }}>Out Time:</span> {guest.outTime}
+              </div>
+            )}
+            <div style={{ 
+              marginBottom: '12px',
+              fontSize: '16px',
+              color: '#062846'
+            }}>
+              <span style={{ fontWeight: '600', color: '#FF492C' }}>Purpose:</span> {guest.purpose}
+            </div>
+            <div style={{ 
+              marginBottom: '15px',
+              fontSize: '16px',
+              color: '#062846'
+            }}>
+              <span style={{ fontWeight: '600', color: '#FF492C' }}>Approval Person:</span> {guest.approvalPerson}
+            </div>
+            {onAction && (
+              <button
+                onClick={() => onAction(guest.idNumber)}
+                style={{
+                  backgroundColor: actionColor,
+                  color: '#ffffff',
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontFamily: 'Figtree, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  boxShadow: `0 2px 4px ${actionColor}30`
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.opacity = '0.9';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.opacity = '1';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                {actionLabel}
+              </button>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+);
 
-  // Placeholder: fetching previous day visitors — not wired into main guest list now
-  const fetchVisitors = async (days) => {
-    try {
-      const response = await fetch(`http://localhost:3001/api/visitors/recent/${days}`);
-      if (!response.ok) {
-        console.error('Failed to fetch visitors:', response.statusText);
-        return [];
-      }
-      const text = await response.text();
-      console.log('Raw response:', text);
-      const data = JSON.parse(text);
-      if (data.success && Array.isArray(data.data)) {
-        return data.data;
-      } else {
-        console.error('Unexpected response format:', data);
-        return [];
-      }
-    } catch (error) {
-      console.error('Error fetching visitors:', error);
-      return [];
-    }
+const GuestList = ({ guests, onCheckout }) => {
+  const getISTDate = () => {
+    return new Date().toLocaleDateString('en-CA', {
+      timeZone: 'Asia/Kolkata'
+    });
   };
 
-  const loadPreviousDayVisitors = async () => {
-    const previousDayVisitors = await fetchVisitors(n + 1);
-    alert(`Loaded ${previousDayVisitors.length} guests from day ${n + 1}`);
-    setN(prev => prev + 1);
-    // To fully integrate, lift this to App state and merge there
-  };
-
-  const handleCheckout = async (idNumber) => {
-    if (window.confirm('Are you sure you want to check out this guest?')) {
-      const result = await onCheckout(idNumber);
-      alert(result.message);
-    }
-  };
-
+  const [selectedDate, setSelectedDate] = useState(getISTDate());
+  
   const visitingGuests = guests.filter(guest => !guest.outTime);
-  const checkedOutGuests = guests.filter(guest => guest.outTime);
+  const checkedOutGuests = guests.filter(guest => 
+    guest.outTime && guest.date === selectedDate
+  );
 
   return (
-    <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
+    <div style={{ 
+      padding: '30px', 
+      maxWidth: '1200px', 
+      margin: '0 auto',
+      fontFamily: 'Figtree, sans-serif',
+      backgroundColor: '#f8f9fa',
+      minHeight: '100vh'
+    }}>
+      {/* Header Section */}
       <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '25px',
+        marginBottom: '30px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '20px'
+        flexWrap: 'wrap',
+        gap: '15px'
       }}>
-        <h2>Guest List</h2>
-        <div>
-          <Link
-            to="/add"
-            style={{
-              backgroundColor: '#28a745',
-              color: 'white',
-              padding: '10px 15px',
-              textDecoration: 'none',
-              borderRadius: '4px',
-              marginRight: '10px'
-            }}
-          >
-            Add New Guest
-          </Link>
-          <button
-            onClick={onRefresh}
-            style={{
-              backgroundColor: '#17a2b8',
-              color: 'white',
-              padding: '10px 15px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Refresh
-          </button>
-        </div>
+        <h2 style={{ 
+          color: '#FF492C',
+          fontSize: '28px',
+          fontWeight: '600',
+          margin: '0',
+          fontFamily: 'Figtree, sans-serif'
+        }}>
+          Guest Management System
+        </h2>
+        <Link
+          to="/add"
+          style={{
+            backgroundColor: '#27D3BC',
+            color: '#ffffff',
+            padding: '12px 25px',
+            textDecoration: 'none',
+            borderRadius: '8px',
+            fontFamily: 'Figtree, sans-serif',
+            fontSize: '16px',
+            fontWeight: '600',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 2px 4px rgba(39, 211, 188, 0.3)',
+            display: 'inline-block'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#23c0a5';
+            e.target.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = '#27D3BC';
+            e.target.style.transform = 'translateY(0)';
+          }}
+        >
+          + Add New Guest
+        </Link>
       </div>
 
-      <div style={{ marginBottom: '40px' }}>
-        <h3 style={{ marginBottom: '20px', color: '#28a745' }}>Visiting</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-          {visitingGuests.map((guest, index) => (
-            <div
-              key={`${guest.idNumber}-${index}`}
+      {/* Currently Visiting Section */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '25px',
+        marginBottom: '30px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+      }}>
+        <CardHolder
+          title={`Currently Visiting (${visitingGuests.length})`}
+          guests={visitingGuests}
+          onAction={onCheckout}
+          actionLabel="Check Out"
+          actionColor="#dc3545"
+        />
+      </div>
+
+      {/* Previous Guests Section */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '25px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '25px',
+          flexWrap: 'wrap',
+          gap: '15px'
+        }}>
+          <h3 style={{ 
+            color: '#FF492C',
+            fontSize: '22px',
+            fontWeight: '600',
+            margin: '0',
+            fontFamily: 'Figtree, sans-serif'
+          }}>
+            Previous Guests
+          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label style={{ 
+              color: '#062846',
+              fontWeight: '500',
+              fontSize: '14px',
+              fontFamily: 'Figtree, sans-serif'
+            }}>
+              Filter by Date:
+            </label>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
               style={{
-                border: '1px solid #ddd',
+                padding: '8px 12px',
+                border: '2px solid #FF492C',
                 borderRadius: '8px',
-                padding: '15px',
-                backgroundColor: '#e8f5e9',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                backgroundColor: '#ffffff',
+                color: '#062846',
+                fontFamily: 'Figtree, sans-serif',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'border-color 0.3s ease'
               }}
-            >
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Name:</strong> {guest.name}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Company:</strong> {guest.company}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>ID Number:</strong> {guest.idNumber}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Date:</strong> {guest.date}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>In Time:</strong> {guest.inTime}
-              </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  onClick={() => handleCheckout(guest.idNumber)}
-                  style={{
-                    backgroundColor: '#dc3545',
-                    color: 'white',
-                    padding: '8px 15px',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Check Out
-                </button>
-              </div>
-            </div>
-          ))}
+            />
+          </div>
         </div>
+        
+        <CardHolder
+          title={`Checked Out on ${new Date(selectedDate).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })} (${checkedOutGuests.length})`}
+          guests={checkedOutGuests}
+          actionColor="#6c757d"
+        />
       </div>
-
-      <div>
-        <h3 style={{ marginBottom: '20px', color: '#dc3545' }}>Checked Out</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-          {checkedOutGuests.map((guest, index) => (
-            <div
-              key={`${guest.idNumber}-${index}`}
-              style={{
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                padding: '15px',
-                backgroundColor: 'white',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Name:</strong> {guest.name}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Company:</strong> {guest.company}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>ID Number:</strong> {guest.idNumber}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Date:</strong> {guest.date}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>In Time:</strong> {guest.inTime}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Out Time:</strong> {guest.outTime}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <button
-        onClick={loadPreviousDayVisitors}
-        style={{
-          backgroundColor: '#007bff',
-          color: 'white',
-          padding: '10px 20px',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          marginTop: '20px'
-        }}
-      >
-        Load Previous Day
-      </button>
     </div>
   );
 };
