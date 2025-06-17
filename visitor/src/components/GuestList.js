@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const GuestList = ({ onCheckout, onRefresh }) => {
-  const [visitors, setVisitors] = useState([]);
+const GuestList = ({ guests, onCheckout, onRefresh }) => {
   const [n, setN] = useState(0);
 
+  // Placeholder: fetching previous day visitors — not wired into main guest list now
   const fetchVisitors = async (days) => {
     try {
       const response = await fetch(`http://localhost:3001/api/visitors/recent/${days}`);
@@ -27,20 +27,12 @@ const GuestList = ({ onCheckout, onRefresh }) => {
     }
   };
 
-  const loadInitialVisitors = async () => {
-    const initialVisitors = await fetchVisitors(0);
-    setVisitors(initialVisitors);
-  };
-
   const loadPreviousDayVisitors = async () => {
     const previousDayVisitors = await fetchVisitors(n + 1);
-    setVisitors((prevVisitors) => [...prevVisitors, ...previousDayVisitors]);
-    setN((prevN) => prevN + 1);
+    alert(`Loaded ${previousDayVisitors.length} guests from day ${n + 1}`);
+    setN(prev => prev + 1);
+    // To fully integrate, lift this to App state and merge there
   };
-
-  useEffect(() => {
-    loadInitialVisitors();
-  }, []);
 
   const handleCheckout = async (idNumber) => {
     if (window.confirm('Are you sure you want to check out this guest?')) {
@@ -49,9 +41,8 @@ const GuestList = ({ onCheckout, onRefresh }) => {
     }
   };
 
-  // Separate visitors into visiting and checked out
-  const visitingGuests = visitors.filter(guest => !guest.outTime);
-  const checkedOutGuests = visitors.filter(guest => guest.outTime);
+  const visitingGuests = guests.filter(guest => !guest.outTime);
+  const checkedOutGuests = guests.filter(guest => guest.outTime);
 
   return (
     <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>

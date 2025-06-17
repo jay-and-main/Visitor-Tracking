@@ -28,23 +28,29 @@ async function initializeSheet() {
     const doc = new GoogleSpreadsheet(SPREADSHEET_ID, serviceAccountAuth);
     await doc.loadInfo();
 
-    let sheet = doc.sheetsByIndex[0];
+    const sheet = doc.sheetsByIndex[0];
 
-    // Check if headers exist, if not create them
-    await sheet.loadHeaderRow();
-    if (!sheet.headerValues || sheet.headerValues.length === 0) {
-      await sheet.setHeaderRow([
-        'Date',
-        'Name',
-        'Company',
-        'ID Number',
-        'In Time',
-        'Purpose',
-        'Out Time',
-        'Approval Person',
-        'Contact',
-        'Status'
-      ]);
+    // Try loading header row
+    try {
+      await sheet.loadHeaderRow();
+    } catch (err) {
+      if (err.message.includes('No values in the header row')) {
+        console.warn('No header found, setting header row...');
+        await sheet.setHeaderRow([
+          'Date',
+          'Name',
+          'Company',
+          'ID Number',
+          'In Time',
+          'Purpose',
+          'Out Time',
+          'Approval Person',
+          'Contact',
+          'Status'
+        ]);
+      } else {
+        throw err; // rethrow unexpected errors
+      }
     }
 
     return sheet;
@@ -53,6 +59,7 @@ async function initializeSheet() {
     throw error;
   }
 }
+
 
 // API Routes
 
