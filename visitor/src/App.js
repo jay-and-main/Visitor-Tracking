@@ -5,7 +5,6 @@ import GuestForm from './components/GuestForm';
 import GuestShow from './components/GuestShow';
 import 'react-phone-input-2/lib/style.css';
 
-
 // API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
@@ -50,9 +49,9 @@ const apiService = {
   },
 
   // Checkout visitor
-  checkoutVisitor: async (idNumber, outTime) => {
+  checkoutVisitor: async (contact, outTime) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/visitors/${idNumber}/checkout`, {
+      const response = await fetch(`${API_BASE_URL}/api/visitors/${contact}/checkout`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -126,12 +125,12 @@ function App() {
     });
   };
 
-  const handleCheckoutGuest = async (idNumber) => {
+  const handleCheckoutGuest = async (contact) => {
     setLoading(true);
     setError(null);
     try {
-      const outTime = getISTTime()
-      const response = await apiService.checkoutVisitor(idNumber, outTime);
+      const outTime = getISTTime();
+      const response = await apiService.checkoutVisitor(contact, outTime);
       if (response.success) {
         // Refresh the guest list
         await fetchGuests();

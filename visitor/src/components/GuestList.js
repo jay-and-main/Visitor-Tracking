@@ -33,7 +33,7 @@ const CardHolder = ({ title, guests, onAction, actionLabel, actionColor }) => (
       ) : (
         guests.map((guest, index) => (
           <div
-            key={`${guest.idNumber}-${index}`}
+            key={`${guest.contact}-${index}`} // changed from guest.idNumber to guest.contact
             style={{
               border: '2px solid #FF492C',
               borderRadius: '12px',
@@ -59,9 +59,6 @@ const CardHolder = ({ title, guests, onAction, actionLabel, actionColor }) => (
               <span style={{ fontWeight: '600', color: '#FF492C' }}>Company:</span> {guest.company}
             </div>
             <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
-              <span style={{ fontWeight: '600', color: '#FF492C' }}>ID Number:</span> {guest.idNumber}
-            </div>
-            <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
               <span style={{ fontWeight: '600', color: '#FF492C' }}>Date:</span> {guest.date}
             </div>
             <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
@@ -75,12 +72,9 @@ const CardHolder = ({ title, guests, onAction, actionLabel, actionColor }) => (
             <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
               <span style={{ fontWeight: '600', color: '#FF492C' }}>Purpose:</span> {guest.purpose}
             </div>
-            <div style={{ marginBottom: '15px', fontSize: '16px', color: '#062846' }}>
-              <span style={{ fontWeight: '600', color: '#FF492C' }}>Approval Person:</span> {guest.approvalPerson}
-            </div>
             {onAction && (
               <button
-                onClick={() => onAction(guest.idNumber)}
+                onClick={() => onAction(guest.contact)} // changed from guest.idNumber to guest.contact
                 style={{
                   backgroundColor: actionColor,
                   color: '#ffffff',

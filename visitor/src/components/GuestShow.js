@@ -4,7 +4,8 @@ import { useParams, Link } from 'react-router-dom';
 
 const GuestShow = ({ guests }) => {
   const { id } = useParams();
-  const guest = guests.find(g => g.idNumber === id);
+  // Now using guest.contact as the unique identifier
+  const guest = guests.find(g => g.contact === id);
 
   if (!guest) {
     return (
@@ -30,9 +31,6 @@ const GuestShow = ({ guests }) => {
           <strong>Company:</strong> {guest.company}
         </div>
         <div style={{ marginBottom: '10px' }}>
-          <strong>ID Number:</strong> {guest.idNumber}
-        </div>
-        <div style={{ marginBottom: '10px' }}>
           <strong>In Time:</strong> {guest.inTime}
         </div>
         <div style={{ marginBottom: '10px' }}>
@@ -40,9 +38,6 @@ const GuestShow = ({ guests }) => {
         </div>
         <div style={{ marginBottom: '10px' }}>
           <strong>Out Time:</strong> {guest.outTime || 'Not checked out'}
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <strong>Approval Person:</strong> {guest.approvalPerson}
         </div>
         <div style={{ marginBottom: '10px' }}>
           <strong>Contact:</strong> {guest.contact}
