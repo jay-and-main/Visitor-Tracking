@@ -40,11 +40,9 @@ async function initializeSheet() {
           'Date',
           'Name',
           'Company',
-          'ID Number',
           'In Time',
           'Purpose',
           'Out Time',
-          'Approval Person',
           'Contact',
           'Status'
         ]);
@@ -70,34 +68,30 @@ app.post('/api/visitors', async (req, res) => {
       date,
       name,
       company,
-      idNumber,
       inTime,
       purpose,
       outTime,
-      approvalPerson,
       contact
     } = req.body;
 
-    // Validation
-    if (!date || !name || !company || !idNumber || !inTime || !purpose || !approvalPerson || !contact) {
+    // Validation (removed idNumber and approvalPerson)
+    if (!date || !name || !company || !inTime || !purpose || !contact) {
       return res.status(400).json({
         error: 'Missing required fields',
-        required: ['date', 'name', 'company', 'idNumber', 'inTime', 'purpose', 'approvalPerson', 'contact']
+        required: ['date', 'name', 'company', 'inTime', 'purpose', 'contact']
       });
     }
 
     const sheet = await initializeSheet();
 
-    // Add row to Google Sheets
+    // Add row to Google Sheets (using contact as unique identifier)
     const newRow = await sheet.addRow({
       'Date': date,
       'Name': name,
       'Company': company,
-      'ID Number': idNumber,
       'In Time': inTime,
       'Purpose': purpose,
       'Out Time': outTime || '',
-      'Approval Person': approvalPerson,
       'Contact': contact,
       'Status': outTime ? 'Checked Out' : 'Checked In'
     });
@@ -121,9 +115,9 @@ app.post('/api/visitors', async (req, res) => {
 });
 
 // Update visitor checkout time
-app.patch('/api/visitors/:idNumber/checkout', async (req, res) => {
+app.patch('/api/visitors/:contact/checkout', async (req, res) => {
   try {
-    const { idNumber } = req.params;
+    const { contact } = req.params;
     const { outTime } = req.body;
 
     if (!outTime) {
@@ -133,11 +127,12 @@ app.patch('/api/visitors/:idNumber/checkout', async (req, res) => {
     const sheet = await initializeSheet();
     await sheet.loadCells();
 
+    // Find visitor row by unique contact and ensure Out Time is empty
     const rows = await sheet.getRows();
-    const visitorRow = rows.find(row => row.get('ID Number') === idNumber && !row.get('Out Time'));
+    const visitorRow = rows.find(row => row.get('Contact') === contact && !row.get('Out Time'));
 
     if (!visitorRow) {
-      return res.status(404).json({ error: 'Active visitor not found with this ID' });
+      return res.status(404).json({ error: 'Active visitor not found with this contact' });
     }
 
     visitorRow.set('Out Time', outTime);
@@ -148,7 +143,7 @@ app.patch('/api/visitors/:idNumber/checkout', async (req, res) => {
       success: true,
       message: 'Visitor checked out successfully',
       data: {
-        idNumber,
+        contact,
         outTime,
         status: 'Checked Out'
       }
@@ -164,12 +159,12 @@ app.patch('/api/visitors/:idNumber/checkout', async (req, res) => {
 });
 
 // Update any visitor entry fields
-app.patch('/api/visitors/:idNumber', async (req, res) => {
+app.patch('/api/visitors/:contact', async (req, res) => {
   try {
-    const { idNumber } = req.params;
+    const { contact } = req.params;
     const updates = req.body;
-    if (!idNumber) {
-      return res.status(400).json({ error: 'ID Number is required' });
+    if (!contact) {
+      return res.status(400).json({ error: 'Contact is required' });
     }
     if (!updates || Object.keys(updates).length === 0) {
       return res.status(400).json({ error: 'No update fields provided' });
@@ -177,15 +172,14 @@ app.patch('/api/visitors/:idNumber', async (req, res) => {
     const sheet = await initializeSheet();
     await sheet.loadCells();
     const rows = await sheet.getRows();
-    // Find the most recent entry for this ID Number
-    const visitorRow = rows.reverse().find(row => row.get('ID Number') === idNumber);
+    // Find the visitor row with this contact
+    const visitorRow = rows.reverse().find(row => row.get('Contact') === contact);
     if (!visitorRow) {
-      return res.status(404).json({ error: 'Visitor not found with this ID' });
+      return res.status(404).json({ error: 'Visitor not found with this contact' });
     }
-    // Update fields
-    const allowedFields = ['Date', 'Name', 'Company', 'ID Number', 'In Time', 'Purpose', 'Out Time', 'Approval Person', 'Contact', 'Status'];
+    // Update fields (allowed fields updated)
+    const allowedFields = ['Date', 'Name', 'Company', 'In Time', 'Purpose', 'Out Time', 'Contact', 'Status'];
     Object.entries(updates).forEach(([key, value]) => {
-      // Map camelCase to header case if needed
       const headerKey = allowedFields.find(f => f.replace(/\s/g, '').toLowerCase() === key.replace(/\s/g, '').toLowerCase());
       if (headerKey && value !== undefined) {
         visitorRow.set(headerKey, value);
@@ -216,11 +210,9 @@ app.get('/api/visitors', async (req, res) => {
       date: row.get('Date'),
       name: row.get('Name'),
       company: row.get('Company'),
-      idNumber: row.get('ID Number'),
       inTime: row.get('In Time'),
       purpose: row.get('Purpose'),
       outTime: row.get('Out Time'),
-      approvalPerson: row.get('Approval Person'),
       contact: row.get('Contact'),
       status: row.get('Status')
     }));
@@ -263,11 +255,9 @@ app.get('/api/visitors/recent/:days', async (req, res) => {
       date: row.get('Date'),
       name: row.get('Name'),
       company: row.get('Company'),
-      idNumber: row.get('ID Number'),
       inTime: row.get('In Time'),
       purpose: row.get('Purpose'),
       outTime: row.get('Out Time'),
-      approvalPerson: row.get('Approval Person'),
       contact: row.get('Contact'),
       status: row.get('Status')
     }));

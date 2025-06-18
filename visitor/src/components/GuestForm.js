@@ -26,11 +26,9 @@ const GuestForm = ({ onAddGuest }) => {
     date: getISTDate(),
     name: '',
     company: '',
-    idNumber: '',
     inTime: getISTTime(),
     purpose: '',
     outTime: '',
-    approvalPerson: '',
     contact: ''
   });
 
@@ -57,11 +55,9 @@ const GuestForm = ({ onAddGuest }) => {
           date: getISTDate(),
           name: '',
           company: '',
-          idNumber: '',
           inTime: getISTTime(),
           purpose: '',
           outTime: '',
-          approvalPerson: '',
           contact: ''
         });
         setTimeout(() => {
@@ -172,7 +168,6 @@ const GuestForm = ({ onAddGuest }) => {
           />
         </div>
 
-        {/* Fixed Company and ID Number row with proper spacing */}
         <div style={{ 
           display: 'flex', 
           gap: '20px', 
@@ -209,41 +204,8 @@ const GuestForm = ({ onAddGuest }) => {
               minLength={2}
             />
           </div>
-          <div style={{ flex: '1', minWidth: '280px' }}>
-            <label style={{ 
-              color: '#062846', 
-              marginBottom: '8px', 
-              display: 'block',
-              fontWeight: '500',
-              fontSize: '14px'
-            }}>
-              ID Number:
-            </label>
-            <input
-              type="text"
-              name="idNumber"
-              value={formData.idNumber}
-              onChange={handleChange}
-              required
-              placeholder="e.g. EMP12345 or 123456789012"
-              maxLength={20}
-              style={{
-                width: '100%',
-                padding: '12px 15px',
-                border: '2px solid #FF492C',
-                borderRadius: '8px',
-                fontFamily: 'Figtree, sans-serif',
-                fontSize: '16px',
-                boxSizing: 'border-box',
-                transition: 'border-color 0.3s ease'
-              }}
-              pattern="[A-Za-z0-9]+"
-              title="ID Number must be alphanumeric."
-            />
-          </div>
         </div>
 
-        {/* Fixed Phone and Time row with equal widths */}
         <div style={{ 
           display: 'flex', 
           gap: '20px', 
@@ -346,37 +308,6 @@ const GuestForm = ({ onAddGuest }) => {
               fontFamily: 'Figtree, sans-serif',
               fontSize: '16px',
               resize: 'vertical',
-              boxSizing: 'border-box',
-              transition: 'border-color 0.3s ease'
-            }}
-            minLength={2}
-          />
-        </div>
-
-        <div style={{ marginBottom: '30px' }}>
-          <label style={{ 
-            color: '#062846',
-            display: 'block',
-            marginBottom: '8px',
-            fontWeight: '500',
-            fontSize: '14px'
-          }}>
-            Approval Person:
-          </label>
-          <input
-            type="text"
-            name="approvalPerson"
-            value={formData.approvalPerson}
-            onChange={handleChange}
-            required
-            placeholder="e.g. Amit Verma"
-            style={{
-              width: '100%',
-              padding: '12px 15px',
-              border: '2px solid #FF492C',
-              borderRadius: '8px',
-              fontFamily: 'Figtree, sans-serif',
-              fontSize: '16px',
               boxSizing: 'border-box',
               transition: 'border-color 0.3s ease'
             }}
