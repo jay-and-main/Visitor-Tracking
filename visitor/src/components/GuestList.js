@@ -44,70 +44,38 @@ const CardHolder = ({ title, guests, onAction, actionLabel, actionColor }) => (
               transition: 'transform 0.2s ease, box-shadow 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
             }}
           >
-            <div style={{ 
-              marginBottom: '12px',
-              fontSize: '16px',
-              color: '#062846'
-            }}>
+            <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
               <span style={{ fontWeight: '600', color: '#FF492C' }}>Name:</span> {guest.name}
             </div>
-            <div style={{ 
-              marginBottom: '12px',
-              fontSize: '16px',
-              color: '#062846'
-            }}>
+            <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
               <span style={{ fontWeight: '600', color: '#FF492C' }}>Company:</span> {guest.company}
             </div>
-            <div style={{ 
-              marginBottom: '12px',
-              fontSize: '16px',
-              color: '#062846'
-            }}>
+            <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
               <span style={{ fontWeight: '600', color: '#FF492C' }}>ID Number:</span> {guest.idNumber}
             </div>
-            <div style={{ 
-              marginBottom: '12px',
-              fontSize: '16px',
-              color: '#062846'
-            }}>
+            <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
               <span style={{ fontWeight: '600', color: '#FF492C' }}>Date:</span> {guest.date}
             </div>
-            <div style={{ 
-              marginBottom: '12px',
-              fontSize: '16px',
-              color: '#062846'
-            }}>
+            <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
               <span style={{ fontWeight: '600', color: '#FF492C' }}>In Time:</span> {guest.inTime}
             </div>
             {guest.outTime && (
-              <div style={{ 
-                marginBottom: '12px',
-                fontSize: '16px',
-                color: '#062846'
-              }}>
+              <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
                 <span style={{ fontWeight: '600', color: '#FF492C' }}>Out Time:</span> {guest.outTime}
               </div>
             )}
-            <div style={{ 
-              marginBottom: '12px',
-              fontSize: '16px',
-              color: '#062846'
-            }}>
+            <div style={{ marginBottom: '12px', fontSize: '16px', color: '#062846' }}>
               <span style={{ fontWeight: '600', color: '#FF492C' }}>Purpose:</span> {guest.purpose}
             </div>
-            <div style={{ 
-              marginBottom: '15px',
-              fontSize: '16px',
-              color: '#062846'
-            }}>
+            <div style={{ marginBottom: '15px', fontSize: '16px', color: '#062846' }}>
               <span style={{ fontWeight: '600', color: '#FF492C' }}>Approval Person:</span> {guest.approvalPerson}
             </div>
             {onAction && (
@@ -153,10 +121,15 @@ const GuestList = ({ guests, onCheckout }) => {
   };
 
   const [selectedDate, setSelectedDate] = useState(getISTDate());
-  
-  const visitingGuests = guests.filter(guest => !guest.outTime);
-  const checkedOutGuests = guests.filter(guest => 
-    guest.outTime && guest.date === selectedDate
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredGuests = guests.filter(guest =>
+    guest.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const visitingGuests = filteredGuests.filter(guest => !guest.outTime);
+  const checkedOutGuests = filteredGuests.filter(
+    guest => guest.outTime && guest.date === selectedDate
   );
 
   return (
@@ -216,6 +189,25 @@ const GuestList = ({ guests, onCheckout }) => {
         >
           + Add New Guest
         </Link>
+      </div>
+
+      {/* 🔍 Search Bar */}
+      <div style={{ marginBottom: '30px' }}>
+        <input
+          type="text"
+          placeholder="Search guests by name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            padding: '10px 15px',
+            width: '100%',
+            maxWidth: '300px',
+            fontSize: '14px',
+            borderRadius: '8px',
+            border: '2px solid #FF492C',
+            fontFamily: 'Figtree, sans-serif'
+          }}
+        />
       </div>
 
       {/* Currently Visiting Section */}
