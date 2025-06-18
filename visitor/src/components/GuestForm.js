@@ -107,17 +107,25 @@ const GuestForm = ({ onAddGuest }) => {
       )}
 
       <form onSubmit={handleSubmit} noValidate>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ 
-            color: '#062846', 
-            display: 'block', 
-            marginBottom: '8px',
-            fontWeight: '500',
-            fontSize: '14px'
-          }}>
-            Date:
-          </label>
-          <input
+
+        {/* Fixed Company and ID Number row with proper spacing */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '20px', 
+          marginBottom: '20px',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ flex: '1', minWidth: '280px' }}>
+            <label style={{ 
+              color: '#062846', 
+              marginBottom: '8px', 
+              display: 'block',
+              fontWeight: '500',
+              fontSize: '14px'
+            }}>
+              Date:
+            </label>
+            <input
             type="date"
             name="date"
             value={formData.date}
@@ -138,6 +146,36 @@ const GuestForm = ({ onAddGuest }) => {
               boxSizing: 'border-box'
             }}
           />
+          </div>
+          <div style={{ flex: '1', minWidth: '280px' }}>
+            <label style={{ 
+              color: '#062846', 
+              marginBottom: '8px', 
+              display: 'block',
+              fontWeight: '500',
+              fontSize: '14px'
+            }}>
+              In Time:
+            </label>
+            <input
+              type="time"
+              name="inTime"
+              value={formData.inTime}
+              onChange={handleChange}
+              required
+              placeholder="HH:MM"
+              style={{
+                width: '100%',
+                padding: '12px 15px',
+                border: '2px solid #FF492C',
+                borderRadius: '8px',
+                fontFamily: 'Figtree, sans-serif',
+                fontSize: '16px',
+                boxSizing: 'border-box',
+                transition: 'border-color 0.3s ease'
+              }}
+            />
+          </div>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
@@ -252,35 +290,6 @@ const GuestForm = ({ onAddGuest }) => {
               countryCodeEditable={false}
             />
           </div>
-          <div style={{ flex: '1', minWidth: '280px' }}>
-            <label style={{ 
-              color: '#062846', 
-              marginBottom: '8px', 
-              display: 'block',
-              fontWeight: '500',
-              fontSize: '14px'
-            }}>
-              In Time:
-            </label>
-            <input
-              type="time"
-              name="inTime"
-              value={formData.inTime}
-              onChange={handleChange}
-              required
-              placeholder="HH:MM"
-              style={{
-                width: '100%',
-                padding: '12px 15px',
-                border: '2px solid #FF492C',
-                borderRadius: '8px',
-                fontFamily: 'Figtree, sans-serif',
-                fontSize: '16px',
-                boxSizing: 'border-box',
-                transition: 'border-color 0.3s ease'
-              }}
-            />
-          </div>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
@@ -291,7 +300,7 @@ const GuestForm = ({ onAddGuest }) => {
             fontWeight: '500',
             fontSize: '14px'
           }}>
-            Purpose:
+            Purpose / Peson meeting:
           </label>
           <textarea
             name="purpose"
